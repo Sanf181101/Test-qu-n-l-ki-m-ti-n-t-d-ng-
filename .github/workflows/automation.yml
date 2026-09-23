@@ -1,0 +1,18 @@
+name: Automation Run
+
+# Chạy tự động mỗi giờ (free: 2.000 phút/tháng cho repo cá nhân trên GitHub Actions).
+# Đổi lịch bằng cách sửa dòng "cron" bên dưới (cú pháp UTC).
+on:
+  schedule:
+    - cron: "0 * * * *" # mỗi giờ, phút 0
+  workflow_dispatch: {} # cho phép bấm chạy tay từ tab Actions trên GitHub
+
+jobs:
+  run-automation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Gọi endpoint tự động hóa
+        run: |
+          curl -sf -X POST "${{ secrets.APP_URL }}/api/automation/run" \
+            -H "x-automation-secret: ${{ secrets.AUTOMATION_SECRET }}" \
+            -H "Content-Type: application/json"

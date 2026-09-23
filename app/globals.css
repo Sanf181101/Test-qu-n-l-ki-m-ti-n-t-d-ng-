@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light dark;
+}
+
+html {
+  scroll-padding-top: 4rem;
+}
+
+body {
+  @apply bg-surface text-ink dark:bg-surface-dark dark:text-ink-dark;
+}
+
+/* Visible focus indicator everywhere — WCAG 2.4.7 */
+:focus-visible {
+  outline: 2px solid theme("colors.accent.DEFAULT");
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.dark :focus-visible {
+  outline-color: theme("colors.accent.dark");
+}
+
+/* Minimum touch target helper — WCAG 2.5.5 */
+.tap-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: theme("colors.border.dark");
+  border-radius: 9999px;
+}
