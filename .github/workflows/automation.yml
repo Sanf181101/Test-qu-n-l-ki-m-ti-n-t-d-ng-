@@ -1,18 +1,33 @@
 name: Automation Run
 
-# Chạy tự động mỗi giờ (free: 2.000 phút/tháng cho repo cá nhân trên GitHub Actions).
+# Chạy tự động mỗi 6 giờ (free: 2.000 phút/tháng cho repo cá nhân trên GitHub Actions).
 # Đổi lịch bằng cách sửa dòng "cron" bên dưới (cú pháp UTC).
 on:
   schedule:
-    - cron: "0 * * * *" # mỗi giờ, phút 0
+    - cron: "0 */6 * * *" # mỗi 6 giờ, phút 0
   workflow_dispatch: {} # cho phép bấm chạy tay từ tab Actions trên GitHub
 
 jobs:
   run-automation:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      APP_URL: ${{ secrets.APP_URL }}
+      AUTOMATION_SECRET: ${{ secrets.AUTOMATION_SECRET }}
     steps:
-      - name: Gọi endpoint tự động hóa
+      - name: Kiểm tra cấu hình secrets
+        id: check
         run: |
-          curl -sf -X POST "${{ secrets.APP_URL }}/api/automation/run" \
-            -H "x-automation-secret: ${{ secrets.AUTOMATION_SECRET }}" \
+          if [ -z "$APP_URL" ] || [ -z "$AUTOMATION_SECRET" ]; then
+            echo "::warning::Chưa cấu hình secret APP_URL / AUTOMATION_SECRET (Settings → Secrets and variables → Actions). Bỏ qua lần chạy này."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Gọi endpoint tự động hóa
+        if: steps.check.outputs.configured == 'true'
+        run: |
+          curl -sf --max-time 60 -X POST "${APP_URL%/}/api/automation/run" \
+            -H "x-automation-secret: ${AUTOMATION_SECRET}" \
             -H "Content-Type: application/json"
