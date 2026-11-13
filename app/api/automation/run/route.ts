@@ -7,8 +7,14 @@ import { runAutomationOnce } from "@/lib/automationRunner";
 function isAuthorized(req: NextRequest): boolean {
   const expected = process.env.AUTOMATION_SECRET;
   if (!expected) return false; // an toàn mặc định: chưa cấu hình secret thì luôn từ chối
-  const provided = req.headers.get("x-automation-secret");
-  return provided === expected;
+  const provided = req.headers.get("x-automation-secret") ?? "";
+  // So sánh thời gian không đổi để chống timing attack.
+  const len = Math.max(provided.length, expected.length);
+  let diff = provided.length ^ expected.length;
+  for (let i = 0; i < len; i++) {
+    diff |= (provided.charCodeAt(i) || 0) ^ (expected.charCodeAt(i) || 0);
+  }
+  return diff === 0;
 }
 
 export async function POST(req: NextRequest) {
